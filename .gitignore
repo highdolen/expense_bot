@@ -1,0 +1,23 @@
+# Переменные окружения и секреты
+.env
+
+
+# Собранное приложение
+/server
+*.exe
+*.test
+*.out
+
+# Go
+/vendor/
+
+# IDE
+.vscode/
+.idea/
+
+# Логи
+*.log
+
+# ОС
+.DS_Store
+Thumbs.db
