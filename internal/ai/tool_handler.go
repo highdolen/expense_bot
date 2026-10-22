@@ -14,6 +14,7 @@ type ExpenseManager interface {
 	Create(ctx context.Context, userID int64, expense domain.Expense) (domain.Expense, error)
 	List(ctx context.Context, filter domain.ExpenseFilter) ([]domain.Expense, error)
 	Total(ctx context.Context, filter domain.ExpenseFilter) (int64, error)
+	Count(ctx context.Context, filter domain.ExpenseFilter) (int64, error)
 	GetByID(ctx context.Context, id int64, userID *int64) (domain.Expense, error)
 	Update(ctx context.Context, expense domain.Expense, userID *int64) (domain.Expense, error)
 	Delete(ctx context.Context, id int64, userID *int64) error
@@ -206,6 +207,7 @@ func (h *ToolHandler) listExpenses(
 	userID int64,
 	arguments string,
 ) (string, error) {
+
 	var args listExpensesArgs
 
 	if err := json.Unmarshal([]byte(arguments), &args); err != nil {
@@ -330,7 +332,7 @@ func (h *ToolHandler) listExpenses(
 		Category: args.Category,
 		From:     from,
 		To:       to,
-		Limit:    20,
+		Limit:    50,
 	}
 
 	expenses, err := h.expenses.List(ctx, filter)
@@ -338,17 +340,26 @@ func (h *ToolHandler) listExpenses(
 		return "", fmt.Errorf("list expenses: %w", err)
 	}
 
-	total, err := h.expenses.Total(ctx, filter)
+	totalCount, err := h.expenses.Count(ctx, filter)
+	if err != nil {
+		return "", fmt.Errorf("count expenses: %w", err)
+	}
+
+	totalAmount, err := h.expenses.Total(ctx, filter)
 	if err != nil {
 		return "", fmt.Errorf("calculate expenses total: %w", err)
 	}
 
 	result := struct {
 		Items              []domain.Expense `json:"items"`
+		TotalCount         int64            `json:"total_count"`
+		HasMore            bool             `json:"has_more"`
 		TotalAmountKopecks int64            `json:"total_amount_kopecks"`
 	}{
 		Items:              expenses,
-		TotalAmountKopecks: total,
+		TotalCount:         totalCount,
+		HasMore:            totalCount > int64(len(expenses)),
+		TotalAmountKopecks: totalAmount,
 	}
 
 	encoded, err := json.Marshal(result)
@@ -357,6 +368,7 @@ func (h *ToolHandler) listExpenses(
 	}
 
 	return string(encoded), nil
+
 }
 
 type updateExpenseArgs struct {

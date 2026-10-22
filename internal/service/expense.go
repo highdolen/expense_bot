@@ -12,6 +12,7 @@ type ExpenseRepository interface {
 	GetByID(ctx context.Context, id int64, userID *int64) (domain.Expense, error)
 	List(ctx context.Context, filter domain.ExpenseFilter) ([]domain.Expense, error)
 	Total(ctx context.Context, filter domain.ExpenseFilter) (int64, error)
+	Count(ctx context.Context, filter domain.ExpenseFilter) (int64, error)
 	Update(ctx context.Context, expense domain.Expense, userID *int64) (domain.Expense, error)
 	Delete(ctx context.Context, id int64, userID *int64) error
 }
@@ -80,6 +81,17 @@ func (s *ExpenseService) Total(
 
 	// Репозиторий учитывает фильтры, но игнорирует limit и offset.
 	return s.repo.Total(ctx, filter)
+}
+
+func (s *ExpenseService) Count(
+	ctx context.Context,
+	filter domain.ExpenseFilter,
+) (int64, error) {
+	if err := validateExpenseFilter(filter); err != nil {
+		return 0, err
+	}
+
+	return s.repo.Count(ctx, filter)
 }
 
 func (s *ExpenseService) Update(

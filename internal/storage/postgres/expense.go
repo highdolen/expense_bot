@@ -155,6 +155,27 @@ func (r *ExpenseRepository) Total(
 	return total, nil
 }
 
+func (r *ExpenseRepository) Count(
+	ctx context.Context,
+	filter domain.ExpenseFilter,
+) (int64, error) {
+	query := strings.Builder{}
+	query.WriteString(`
+		SELECT COUNT(*)
+		FROM expenses
+	`)
+
+	where, args := buildExpenseWhere(filter)
+	query.WriteString(where)
+
+	var count int64
+	if err := r.pool.QueryRow(ctx, query.String(), args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("count expenses: %w", err)
+	}
+
+	return count, nil
+}
+
 func (r *ExpenseRepository) Update(
 	ctx context.Context,
 	expense domain.Expense,
