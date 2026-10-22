@@ -36,6 +36,17 @@ func (h *Handler) HandleMessage(ctx context.Context, b *bot.Bot, update *models.
 	userID := message.From.ID
 	chatID := message.Chat.ID
 
+	// Работаем только в личных чатах, чтобы не раскрывать расходы в группах.
+	if message.Chat.Type != "private" {
+		h.sendMessage(
+			ctx,
+			b,
+			chatID,
+			"Для работы с расходами напиши мне в личные сообщения.",
+		)
+		return
+	}
+
 	text := strings.TrimSpace(message.Text)
 	if text == "" {
 		h.sendMessage(ctx, b, chatID, "Пожалуйста, отправь текстовое сообщение.")
