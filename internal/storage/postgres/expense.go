@@ -9,6 +9,7 @@ import (
 	"expense_tgbot/internal/domain"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -39,6 +40,16 @@ func (r *ExpenseRepository) Create(
 		expense.Comment,
 	))
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) &&
+			pgErr.Code == "23503" &&
+			pgErr.ConstraintName == "expenses_user_id_fkey" {
+			return domain.Expense{}, fmt.Errorf(
+				"create expense: %w",
+				domain.ErrUserNotFound,
+			)
+		}
+
 		return domain.Expense{}, fmt.Errorf("create expense: %w", err)
 	}
 
