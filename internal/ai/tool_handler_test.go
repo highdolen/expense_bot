@@ -30,6 +30,8 @@ type fakeExpenseManager struct {
 	getErr       error
 	updateErr    error
 	deleteErr    error
+	countResult  int64
+	countErr     error
 }
 
 func (f *fakeExpenseManager) Create(_ context.Context, userID int64, expense domain.Expense) (domain.Expense, error) {
@@ -47,6 +49,14 @@ func (f *fakeExpenseManager) List(_ context.Context, filter domain.ExpenseFilter
 func (f *fakeExpenseManager) Total(_ context.Context, _ domain.ExpenseFilter) (int64, error) {
 	return f.totalResult, f.totalErr
 }
+
+func (f *fakeExpenseManager) Count(
+	_ context.Context,
+	_ domain.ExpenseFilter,
+) (int64, error) {
+	return f.countResult, f.countErr
+}
+
 func (f *fakeExpenseManager) GetByID(_ context.Context, id int64, userID *int64) (domain.Expense, error) {
 	f.getID, f.getUserID = id, userID
 	if f.getErr != nil {

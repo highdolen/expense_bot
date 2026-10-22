@@ -128,11 +128,19 @@ func resolveStructuredExpenseDate(
 	date *expenseDateArgs,
 	location *time.Location,
 ) (time.Time, error) {
+	return resolveStructuredExpenseDateAt(date, location, time.Now())
+}
+
+func resolveStructuredExpenseDateAt(
+	date *expenseDateArgs,
+	location *time.Location,
+	now time.Time,
+) (time.Time, error) {
 	if location == nil {
 		location = time.UTC
 	}
 
-	now := time.Now().In(location)
+	now = now.In(location)
 	today := startOfDay(now)
 
 	if date == nil {

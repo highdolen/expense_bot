@@ -22,6 +22,7 @@ type fakeExpenseRepository struct {
 	createCalled   bool
 	updateCalled   bool
 	deleteCalled   bool
+	count          int64
 }
 
 func (f *fakeExpenseRepository) Create(
@@ -77,6 +78,19 @@ func (f *fakeExpenseRepository) Total(
 	}
 
 	return f.total, nil
+}
+
+func (f *fakeExpenseRepository) Count(
+	_ context.Context,
+	filter domain.ExpenseFilter,
+) (int64, error) {
+	f.lastFilter = filter
+
+	if f.err != nil {
+		return 0, f.err
+	}
+
+	return f.count, nil
 }
 
 func (f *fakeExpenseRepository) Update(
